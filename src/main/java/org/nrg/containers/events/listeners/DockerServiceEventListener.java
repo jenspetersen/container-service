@@ -19,6 +19,7 @@ public class DockerServiceEventListener implements Consumer<Event<ServiceTaskEve
 
     @Autowired
     public DockerServiceEventListener(final EventBus eventBus) {
+
         eventBus.on(type(ServiceTaskEvent.class), this);
     }
 
