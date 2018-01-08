@@ -7,12 +7,14 @@ Not yet released.
 ### Features
 
 * [CS-457][] Add `label` field to command wrapper. This will be used to represent the command wrapper in the "Run Container" menu going forward.
+* [CS-458][] `GET /commands/available` includes command and wrapper labels
 
 ### Bugfixes
 
 *
 
 [CS-457]: https://issues.xnat.org/browse/CS-457
+[CS-458]: https://issues.xnat.org/browse/CS-458
 
 ## 1.4.0
 
