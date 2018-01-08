@@ -29,6 +29,7 @@ import java.util.Set;
 public class CommandWrapperEntity implements Serializable {
     private long id;
     private String name;
+    private String label;
     private String description;
     private CommandEntity commandEntity;
     private Set<String> contexts;
@@ -47,6 +48,7 @@ public class CommandWrapperEntity implements Serializable {
             this.setId(commandWrapper.id());
         }
         this.setName(commandWrapper.name());
+        this.setLabel(commandWrapper.label());
         this.setDescription(commandWrapper.description());
         this.setContexts(commandWrapper.contexts());
 
@@ -120,6 +122,14 @@ public class CommandWrapperEntity implements Serializable {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(final String label) {
+        this.label = label;
     }
 
     public String getDescription() {
@@ -265,6 +275,7 @@ public class CommandWrapperEntity implements Serializable {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
                 .add("name", name)
+                .add("label", label)
                 .add("description", description)
                 .add("contexts", contexts)
                 .add("externalInputs", externalInputs)

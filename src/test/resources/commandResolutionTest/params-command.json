@@ -25,6 +25,7 @@
     "xnat": [
         {
             "name": "blank-wrapper",
+            "label": "Param test: blank",
             "description": "Test resolving the command by itself",
             "external-inputs": [],
             "derived-inputs": [],
@@ -32,6 +33,7 @@
         },
         {
             "name": "identity-wrapper",
+            "label": "Param test: identity",
             "description": "Test resolving the command with wrapper params",
             "external-inputs": [
                 {

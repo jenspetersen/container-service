@@ -29,6 +29,7 @@
     "xnat": [
         {
             "name": "ecat-dump scan",
+            "label": "ecat-dump - scan",
             "description": "",
             "contexts": ["xnat:imageScanData"],
             "external-inputs": [

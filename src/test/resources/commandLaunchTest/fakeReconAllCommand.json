@@ -46,6 +46,7 @@
     "xnat": [
         {
             "name": "recon-all-session",
+            "label": "Recon-all",
             "description": "launch the fake recon-all command with a session input",
             "external-inputs": [
                 {

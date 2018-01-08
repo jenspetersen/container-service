@@ -9,6 +9,7 @@
     "xnat": [
         {
             "name": "wrapper",
+            "label": "Test wrapper",
             "description": "I have to be here, I guess"
         }
     ]

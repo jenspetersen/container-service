@@ -6,11 +6,13 @@ Not yet released.
 
 ### Features
 
-*
+* [CS-457][] Add `label` field to command wrapper. This will be used to represent the command wrapper in the "Run Container" menu going forward.
 
 ### Bugfixes
 
 *
+
+[CS-457]: https://issues.xnat.org/browse/CS-457
 
 ## 1.4.0
 

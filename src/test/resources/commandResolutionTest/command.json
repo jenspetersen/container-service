@@ -19,6 +19,7 @@
     "xnat": [
         {
             "name": "session-scan-resource",
+            "label": "Dummy: Session scan resource",
             "description": "run the dummy command with a session, from which we derive a scan and a resource",
             "external-inputs": [
                 {
@@ -92,6 +93,7 @@
         },
         {
             "name": "scan-resource-file",
+            "label": "Dummy: Scan resource file",
             "description": "run the dummy command with a scan, from which we derive a resource and a file",
             "external-inputs": [
                 {
@@ -136,6 +138,7 @@
         },
         {
             "name": "project",
+            "label": "Dummy: project",
             "description": "run the dummy command with a project input",
             "external-inputs": [
                 {
@@ -158,6 +161,7 @@
         },
         {
             "name": "project-subject",
+            "label": "Dummy: Project subject",
             "description": "run the dummy command with a project input, from which we derive a subject input",
             "external-inputs": [
                 {
@@ -187,6 +191,7 @@
         },
         {
             "name": "session-assessor",
+            "label": "Dummy: Session assessor",
             "description": "run the dummy command with a session, from which we derive an assessor",
             "external-inputs": [
                 {

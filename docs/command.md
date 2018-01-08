@@ -66,6 +66,7 @@ If you want XNAT to execute your docker image, you will need a Command. The Comm
         "xnat": [
             {
                 "name": "",
+                "label": "",
                 "description": "",
                 "contexts": [""],
                 "external-inputs": [
@@ -131,6 +132,7 @@ If you want XNAT to execute your docker image, you will need a Command. The Comm
 - **ports** - (Docker images only) String key/value pairs of ports to expose. The key is the port inside the container, the value is the port to expose out on the host. In other words, entries in this map should be of the form `"container_port": "host_port"`. Keys and values can be templates.
 - **inputs** - A list of inputs that will be used to resolve the command and launch the container. See [Command Inputs](#command-inputs).
     - **name** - The name of the input. You can use this to refer to the input elsewhere in the command.
+    - **label** - A short, human-friendly name of the command wrapper. This field will be displayed in the XNAT "Run Container" menu, so choose something that will help users understand what your command + wrapper are and do. (If no label is provided, the description will be used. If neither are provided, then the name will be used.)
     - **description** - A human-friendly description of the input.
     - **type** - One of string, boolean, number, or file. See the section on [input types](#input-types) below for more. Default: string.
     - **required** - A boolean value (true/false) whether this input is required. If a required input does not have a value at runtime, an error is thrown. Default: false.

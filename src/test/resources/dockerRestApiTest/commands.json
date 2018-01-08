@@ -13,6 +13,7 @@
 },
 {
     "name": "dcm2niix-scan",
+    "label": "Label test: dcm2niix",
     "description": "Run dcm2niix on a scan's DICOMs",
     "type": "docker",
     "command-line": "/run/dcm2niix-scan.sh #scanId# #sessionId#",
