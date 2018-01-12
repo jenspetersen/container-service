@@ -42,14 +42,13 @@ apply plugin: "com.github.zhurlik.swagger"
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-def vXnat = '1.7.4'
+def vXnat = 'X.X.X-eventservice-SNAPSHOT'
 def vXnatDev = '1.7.5-SNAPSHOT'
 def vMockito = '1.10.19'
 def vJavassist = '3.21.0-GA'
 def vAwaitility = '2.0.0'
 
 repositories {
-    mavenLocal()
     jcenter()
     mavenCentral()
     maven {
