@@ -57,6 +57,9 @@ public abstract class Command {
     @JsonProperty("inputs") public abstract ImmutableList<CommandInput> inputs();
     @JsonProperty("outputs") public abstract ImmutableList<CommandOutput> outputs();
     @JsonProperty("xnat") public abstract ImmutableList<CommandWrapper> xnatCommandWrappers();
+    @Nullable @JsonProperty("reserve-memory") public abstract Long reserveMemory();
+    @Nullable @JsonProperty("limit-memory") public abstract Long limitMemory();
+    @Nullable @JsonProperty("limit-cpu") public abstract Double limitCpu();
 
     @JsonCreator
     static Command create(@JsonProperty("id") final long id,
@@ -77,7 +80,10 @@ public abstract class Command {
                           @JsonProperty("ports") final Map<String, String> ports,
                           @JsonProperty("inputs") final List<CommandInput> inputs,
                           @JsonProperty("outputs") final List<CommandOutput> outputs,
-                          @JsonProperty("xnat") final List<CommandWrapper> xnatCommandWrappers) {
+                          @JsonProperty("xnat") final List<CommandWrapper> xnatCommandWrappers,
+                          @JsonProperty("reserve-memory") final Long reserveMemory,
+                          @JsonProperty("limit-memory") final Long limitMemory,
+                          @JsonProperty("limit-cpu") final Double limitCpu) {
         return builder()
                 .id(id)
                 .name(name)
@@ -98,6 +104,9 @@ public abstract class Command {
                 .inputs(inputs == null ? Collections.<CommandInput>emptyList() : inputs)
                 .outputs(outputs == null ? Collections.<CommandOutput>emptyList() : outputs)
                 .xnatCommandWrappers(xnatCommandWrappers == null ? Collections.<CommandWrapper>emptyList() : xnatCommandWrappers)
+                .reserveMemory(reserveMemory)
+                .limitMemory(limitMemory)
+                .limitCpu(limitCpu)
                 .build();
     }
 
@@ -117,6 +126,9 @@ public abstract class Command {
                 .type(commandEntity.getType().getName())
                 .workingDirectory(commandEntity.getWorkingDirectory())
                 .commandLine(commandEntity.getCommandLine())
+                .reserveMemory(commandEntity.getReserveMemory())
+                .limitMemory(commandEntity.getLimitMemory())
+                .limitCpu(commandEntity.getLimitCpu())
                 .environmentVariables(commandEntity.getEnvironmentVariables() == null ?
                         Collections.<String, String>emptyMap() :
                         commandEntity.getEnvironmentVariables())
@@ -189,6 +201,9 @@ public abstract class Command {
                 .hash(creation.hash())
                 .workingDirectory(creation.workingDirectory())
                 .commandLine(creation.commandLine())
+                .reserveMemory(creation.reserveMemory())
+                .limitMemory(creation.limitMemory())
+                .limitCpu(creation.limitCpu())
                 .mounts(creation.mounts() == null ? Collections.<CommandMount>emptyList() : creation.mounts())
                 .environmentVariables(creation.environmentVariables() == null ? Collections.<String, String>emptyMap() : creation.environmentVariables())
                 .ports(creation.ports() == null ? Collections.<String, String>emptyMap() : creation.ports())
@@ -525,6 +540,10 @@ public abstract class Command {
             xnatCommandWrappersBuilder().add(commandWrapper);
             return this;
         }
+
+        public abstract Builder reserveMemory(Long reserveMemory);
+        public abstract Builder limitMemory(Long limitMemory);
+        public abstract Builder limitCpu(Double limitCpu);
 
         public abstract Command build();
     }
@@ -1304,6 +1323,9 @@ public abstract class Command {
         @JsonProperty("inputs") public abstract ImmutableList<CommandInput> inputs();
         @JsonProperty("outputs") public abstract ImmutableList<CommandOutput> outputs();
         @JsonProperty("xnat") public abstract ImmutableList<CommandWrapperCreation> commandWrapperCreations();
+        @Nullable @JsonProperty("reserve-memory") public abstract Long reserveMemory();
+        @Nullable @JsonProperty("limit-memory") public abstract Long limitMemory();
+        @Nullable @JsonProperty("limit-cpu") public abstract Double limitCpu();
 
         @JsonCreator
         static CommandCreation create(@JsonProperty("name") final String name,
@@ -1323,7 +1345,10 @@ public abstract class Command {
                                       @JsonProperty("ports") final Map<String, String> ports,
                                       @JsonProperty("inputs") final List<CommandInput> inputs,
                                       @JsonProperty("outputs") final List<CommandOutput> outputs,
-                                      @JsonProperty("xnat") final List<CommandWrapperCreation> commandWrapperCreations) {
+                                      @JsonProperty("xnat") final List<CommandWrapperCreation> commandWrapperCreations,
+                                      @JsonProperty("reserve-memory") final Long reserveMemory,
+                                      @JsonProperty("limit-memory") final Long limitMemory,
+                                      @JsonProperty("limit-cpu") final Double limitCpu) {
             return new AutoValue_Command_CommandCreation(name, label, description, version, schemaVersion, infoUrl, image,
                     type, index, hash, workingDirectory, commandLine,
                     mounts == null ? ImmutableList.<CommandMount>of() : ImmutableList.copyOf(mounts),
@@ -1331,7 +1356,8 @@ public abstract class Command {
                     ports == null ? ImmutableMap.<String, String>of() : ImmutableMap.copyOf(ports),
                     inputs == null ? ImmutableList.<CommandInput>of() : ImmutableList.copyOf(inputs),
                     outputs == null ? ImmutableList.<CommandOutput>of() : ImmutableList.copyOf(outputs),
-                    commandWrapperCreations == null ? ImmutableList.<CommandWrapperCreation>of() : ImmutableList.copyOf(commandWrapperCreations));
+                    commandWrapperCreations == null ? ImmutableList.<CommandWrapperCreation>of() : ImmutableList.copyOf(commandWrapperCreations),
+                    reserveMemory, limitMemory, limitCpu);
         }
     }
 
@@ -1360,6 +1386,9 @@ public abstract class Command {
         public abstract ImmutableList<CommandInput> inputs();
         public abstract ImmutableList<CommandOutput> outputs();
         public abstract CommandWrapper wrapper();
+        @Nullable public abstract Long reserveMemory();
+        @Nullable public abstract Long limitMemory();
+        @Nullable public abstract Double limitCpu();
 
         public static ConfiguredCommand.Builder initialize(final Command command) {
             return builder()
@@ -1379,7 +1408,10 @@ public abstract class Command {
                     .index(command.index())
                     .hash(command.hash())
                     .ports(command.ports())
-                    .outputs(command.outputs());
+                    .outputs(command.outputs())
+                    .reserveMemory(command.reserveMemory())
+                    .limitMemory(command.limitMemory())
+                    .limitCpu(command.limitCpu());
         }
 
         static Builder builder() {
@@ -1441,6 +1473,10 @@ public abstract class Command {
             }
 
             public abstract Builder wrapper(CommandWrapper commandWrapper);
+
+            public abstract Builder reserveMemory(Long reserveMemory);
+            public abstract Builder limitMemory(Long limitMemory);
+            public abstract Builder limitCpu(Double limitCpu);
 
             public abstract ConfiguredCommand build();
         }

@@ -66,7 +66,9 @@ public class ContainerEntity extends AbstractHibernateEntity {
     private List<ContainerEntityOutput> outputs;
     private List<ContainerEntityHistory> history = Lists.newArrayList();
     private List<String> logPaths;
-
+    private Long reserveMemory;
+    private Long limitMemory;
+    private Double limitCpu;
 
     public ContainerEntity() {}
 
@@ -131,6 +133,9 @@ public class ContainerEntity extends AbstractHibernateEntity {
                     }
                 }))
         );
+        this.setReserveMemory(containerPojo.reserveMemory());
+        this.setLimitMemory(containerPojo.limitMemory());
+        this.setLimitCpu(containerPojo.limitCpu());
 
         return this;
     }
@@ -290,6 +295,30 @@ public class ContainerEntity extends AbstractHibernateEntity {
 
     public void setNodeId(final String nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public Long getReserveMemory() {
+        return reserveMemory;
+    }
+
+    public void setReserveMemory(final Long reserveMemory) {
+        this.reserveMemory = reserveMemory;
+    }
+
+    public Long getLimitMemory() {
+        return limitMemory;
+    }
+
+    public void setLimitMemory(final Long limitMemory) {
+        this.limitMemory = limitMemory;
+    }
+
+    public Double getLimitCpu() {
+        return limitCpu;
+    }
+
+    public void setLimitCpu(final Double limitCpu) {
+        this.limitCpu = limitCpu;
     }
 
     @ManyToOne
@@ -503,6 +532,9 @@ public class ContainerEntity extends AbstractHibernateEntity {
                 .add("outputs", outputs)
                 .add("history", history)
                 .add("logPaths", logPaths)
+                .add("reserveMemory", reserveMemory)
+                .add("limitMemory", limitMemory)
+                .add("limitCpu", limitCpu)
                 .toString();
     }
 }

@@ -369,6 +369,9 @@ public class CommandResolutionServiceImpl implements CommandResolutionService {
                     .ports(resolvePorts(resolvedInputValuesByReplacementKey))
                     .mounts(resolveCommandMounts(resolvedInputTrees, resolvedInputValuesByReplacementKey))
                     .setupCommands(resolvedSetupCommands)
+                    .reserveMemory(command.reserveMemory())
+                    .limitMemory(command.limitMemory())
+                    .limitCpu(command.limitCpu())
                     .build();
 
             log.info("Done resolving command.");

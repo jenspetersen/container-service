@@ -59,6 +59,9 @@ public abstract class Container {
     @JsonProperty("outputs") public abstract ImmutableList<ContainerOutput> outputs();
     @JsonProperty("history") public abstract ImmutableList<ContainerHistory> history();
     @JsonProperty("log-paths") public abstract ImmutableList<String> logPaths();
+    @Nullable @JsonProperty("reserve-memory") public abstract Long reserveMemory();
+    @Nullable @JsonProperty("limit-memory") public abstract Long limitMemory();
+    @Nullable @JsonProperty("limit-cpu") public abstract Double limitCpu();
 
     @JsonIgnore
     public boolean isSwarmService() {
@@ -108,7 +111,10 @@ public abstract class Container {
                                    @JsonProperty("inputs") final List<ContainerInput> inputs,
                                    @JsonProperty("outputs") final List<ContainerOutput> outputs,
                                    @JsonProperty("history") final List<ContainerHistory> history,
-                                   @JsonProperty("log-paths") final List<String> logPaths) {
+                                   @JsonProperty("log-paths") final List<String> logPaths,
+                                   @JsonProperty("reserve-memory") final Long reserveMemory,
+                                   @JsonProperty("limit-memory") final Long limitMemory,
+                                   @JsonProperty("limit-cpu") final Double limitCpu) {
 
         return builder()
                 .databaseId(databaseId)
@@ -135,6 +141,9 @@ public abstract class Container {
                 .outputs(outputs == null ? Collections.<ContainerOutput>emptyList() : outputs)
                 .history(history == null ? Collections.<ContainerHistory>emptyList() : history)
                 .logPaths(logPaths == null ? Collections.<String>emptyList() : logPaths)
+                .reserveMemory(reserveMemory)
+                .limitMemory(limitMemory)
+                .limitCpu(limitCpu)
                 .build();
     }
 
@@ -200,6 +209,9 @@ public abstract class Container {
                             }
                         })
                 )
+                .reserveMemory(containerEntity.getReserveMemory())
+                .limitMemory(containerEntity.getLimitMemory())
+                .limitCpu(containerEntity.getLimitCpu())
                 .build();
     }
 
@@ -241,7 +253,10 @@ public abstract class Container {
                 .addCommandInputs(resolvedCommand.commandInputValues())
                 .addExternalWrapperInputs(resolvedCommand.externalWrapperInputValues())
                 .addDerivedWrapperInputs(resolvedCommand.derivedWrapperInputValues())
-                .addOutputsFromResolvedCommand(resolvedCommand.outputs());
+                .addOutputsFromResolvedCommand(resolvedCommand.outputs())
+                .reserveMemory(resolvedCommand.reserveMemory())
+                .limitMemory(resolvedCommand.limitMemory())
+                .limitCpu(resolvedCommand.limitCpu());
     }
 
     public static Builder builder() {
@@ -334,6 +349,9 @@ public abstract class Container {
         public abstract Builder parentDatabaseId(Long parentDatabaseId);
         public abstract Builder parentContainerId(String parentContainerId);
         public abstract Builder parentContainer(Container parentContainer);
+        public abstract Builder reserveMemory(Long reserveMemory);
+        public abstract Builder limitMemory(Long limitMemory);
+        public abstract Builder limitCpu(Double limitCpu);
 
         public Builder setParentProperties(final Container parentContainer) {
             return this

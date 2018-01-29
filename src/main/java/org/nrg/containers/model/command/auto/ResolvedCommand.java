@@ -36,6 +36,9 @@ public abstract class ResolvedCommand {
     @JsonProperty("outputs") public abstract ImmutableList<ResolvedCommandOutput> outputs();
     @JsonProperty("working-directory") @Nullable public abstract String workingDirectory();
     @JsonProperty("setup-commands") public abstract ImmutableList<ResolvedCommand> setupCommands();
+    @JsonProperty("reserve-memory") @Nullable public abstract Long reserveMemory();
+    @JsonProperty("limit-memory") @Nullable public abstract Long limitMemory();
+    @JsonProperty("limit-cpu") @Nullable public abstract Double limitCpu();
 
     @JsonProperty("external-wrapper-input-values")
     public ImmutableMap<String, String> externalWrapperInputValues() {
@@ -141,6 +144,9 @@ public abstract class ResolvedCommand {
                 .image(setupCommand.image())
                 .commandLine(setupCommand.commandLine())
                 .workingDirectory(setupCommand.workingDirectory())
+                .reserveMemory(setupCommand.reserveMemory())
+                .limitMemory(setupCommand.limitMemory())
+                .limitCpu(setupCommand.limitCpu())
                 .addMount(ResolvedCommandMount.builder()
                         .name("input")
                         .containerPath("/input")
@@ -215,6 +221,10 @@ public abstract class ResolvedCommand {
             setupCommandsBuilder().add(setupCommand);
             return this;
         }
+
+        public abstract Builder reserveMemory(Long reserveMemory);
+        public abstract Builder limitMemory(Long limitMemory);
+        public abstract Builder limitCpu(Double limitCpu);
 
         public abstract ResolvedCommand build();
     }
