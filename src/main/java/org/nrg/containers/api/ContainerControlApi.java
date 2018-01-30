@@ -42,7 +42,7 @@ public interface ContainerControlApi {
 //    String createContainer(final DockerServer server, final String imageName,
 //                       final List<String> runCommand, final List <String> volumes,
 //                       final List<String> environmentVariables) throws DockerServerException;
-    void startContainer(final String containerOrServiceId) throws NoDockerServerException, DockerServerException;
+    void startContainer(final Container containerOrService) throws NoDockerServerException, DockerServerException;
 
     List<Command> parseLabels(final String imageName)
             throws DockerServerException, NoDockerServerException, NotFoundException;

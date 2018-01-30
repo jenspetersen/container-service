@@ -1,15 +1,17 @@
 package org.nrg.containers.model.container.auto;
 
 import com.google.auto.value.AutoValue;
+import com.spotify.docker.client.messages.swarm.Task;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Date;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @AutoValue
 public abstract class ServiceTask {
     private static final Pattern exitStatusPattern = Pattern.compile("complete|shutdown|failed|rejected");
+    private static final Pattern hasNotStartedPattern = Pattern.compile("new|allocated|pending|assigned|accepted|preparing|ready|starting");
 
     public abstract String serviceId();
     public abstract String taskId();
@@ -20,14 +22,34 @@ public abstract class ServiceTask {
     @Nullable public abstract String message();
     @Nullable public abstract Integer exitCode();
 
+    public static ServiceTask create(final @Nonnull Task task, final String serviceId) {
+        return ServiceTask.builder()
+                .serviceId(serviceId)
+                .taskId(task.id())
+                .nodeId(task.nodeId())
+                .status(task.status().state())
+                .statusTime(task.status().timestamp())
+                .message(task.status().message())
+                .exitCode(task.status().containerStatus().exitCode())
+                .containerId(task.status().containerStatus().containerId())
+                .build();
+    }
+
     public boolean isExitStatus() {
-        final Matcher exitStatusMatcher = exitStatusPattern.matcher(status());
-        return exitStatusMatcher.matches();
+        final String status = status();
+        return status != null && exitStatusPattern.matcher(status).matches();
+    }
+
+    public boolean hasNotStarted() {
+        final String status = status();
+        return status == null || hasNotStartedPattern.matcher(status).matches();
     }
 
     public static Builder builder() {
         return new AutoValue_ServiceTask.Builder();
     }
+
+    public abstract Builder toBuilder();
 
     @AutoValue.Builder
     public abstract static class Builder {

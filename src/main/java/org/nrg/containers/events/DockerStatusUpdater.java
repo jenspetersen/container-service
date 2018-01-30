@@ -136,7 +136,7 @@ public class DockerStatusUpdater implements Runnable {
     private UpdateReport updateServices(final DockerServer dockerServer) {
         final UpdateReport report = UpdateReport.create();
         for (final Container service : containerService.retrieveNonfinalizedServices()) {
-            log.debug("Getting Task info for Service {}.", service.serviceId());
+            // log.debug("Getting Task info for Service {}.", service.serviceId());
             try {
                 controlApi.throwTaskEventForService(dockerServer, service);
                 report.add(UpdateReportEntry.success(service.serviceId()));

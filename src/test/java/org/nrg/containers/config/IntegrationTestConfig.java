@@ -9,6 +9,7 @@ import org.nrg.containers.api.DockerControlApi;
 import org.nrg.containers.daos.ContainerEntityRepository;
 import org.nrg.containers.daos.DockerServerEntityRepository;
 import org.nrg.containers.events.listeners.DockerContainerEventListener;
+import org.nrg.containers.events.listeners.DockerServiceEventListener;
 import org.nrg.containers.model.command.entity.CommandEntity;
 import org.nrg.containers.model.command.entity.CommandInputEntity;
 import org.nrg.containers.model.command.entity.CommandMountEntity;
@@ -123,6 +124,11 @@ public class IntegrationTestConfig {
     @Bean
     public DockerContainerEventListener containerEventListener(final EventBus eventBus) {
         return new DockerContainerEventListener(eventBus);
+    }
+
+    @Bean
+    public DockerServiceEventListener serviceEventListener(final EventBus eventBus) {
+        return new DockerServiceEventListener(eventBus);
     }
 
     @Bean

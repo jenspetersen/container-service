@@ -54,6 +54,7 @@ import org.nrg.containers.model.image.docker.DockerImage;
 import org.nrg.containers.model.server.docker.DockerServerBase.DockerServer;
 import org.nrg.containers.services.CommandLabelService;
 import org.nrg.containers.services.DockerServerService;
+import org.nrg.containers.utils.ShellSplitter;
 import org.nrg.framework.exceptions.NotFoundException;
 import org.nrg.framework.services.NrgEventService;
 import org.nrg.xft.security.UserI;
@@ -320,6 +321,7 @@ public class DockerControlApi implements ContainerControlApi {
                         createService(server,
                                 resolvedCommand.image(),
                                 resolvedCommand.commandLine(),
+                                resolvedCommand.overrideEntrypoint(),
                                 resolvedCommand.mounts(),
                                 environmentVariables,
                                 resolvedCommand.ports(),
@@ -333,6 +335,7 @@ public class DockerControlApi implements ContainerControlApi {
                         createContainer(server,
                                 resolvedCommand.image(),
                                 resolvedCommand.commandLine(),
+                                resolvedCommand.overrideEntrypoint(),
                                 resolvedCommand.mounts(),
                                 environmentVariables,
                                 resolvedCommand.ports(),
@@ -347,6 +350,7 @@ public class DockerControlApi implements ContainerControlApi {
     private String createContainer(final DockerServer server,
                                    final String imageName,
                                    final String runCommand,
+                                   final boolean overrideEntrypoint,
                                    final List<ResolvedCommandMount> resolvedCommandMounts,
                                    final List<String> environmentVariables,
                                    final Map<String, String> ports,
@@ -403,8 +407,8 @@ public class DockerControlApi implements ContainerControlApi {
                         .image(imageName)
                         .attachStdout(true)
                         .attachStderr(true)
-                        .cmd("/bin/sh", "-c", runCommand)
-                        .entrypoint("") // CS-433 Override any entrypoint image specifies
+                        .cmd(ShellSplitter.shellSplit(runCommand))
+                        .entrypoint(overrideEntrypoint ? Collections.singletonList("") : null)
                         .env(environmentVariables)
                         .workingDir(workingDirectory)
                         .build();
@@ -450,6 +454,7 @@ public class DockerControlApi implements ContainerControlApi {
     private String createService(final DockerServer server,
                                  final String imageName,
                                  final String runCommand,
+                                 final boolean overrideEntrypoint,
                                  final List<ResolvedCommandMount> resolvedCommandMounts,
                                  final List<String> environmentVariables,
                                  final Map<String, String> ports,
@@ -509,14 +514,20 @@ public class DockerControlApi implements ContainerControlApi {
                     .readOnly(!resolvedCommandMount.writable())
                     .build());
         }
+
+        final ContainerSpec.Builder containerSpecBuilder = ContainerSpec.builder()
+                .image(imageName)
+                .env(environmentVariables)
+                .dir(workingDirectory)
+                .mounts(mounts);
+        if (overrideEntrypoint) {
+            containerSpecBuilder.command("/bin/sh", "-c", runCommand);
+        } else {
+            containerSpecBuilder.args(ShellSplitter.shellSplit(runCommand));
+        }
+
         final TaskSpec taskSpec = TaskSpec.builder()
-                .containerSpec(ContainerSpec.builder()
-                        .image(imageName)
-                        .command("/bin/sh", "-c", runCommand)
-                        .env(environmentVariables)
-                        .dir(workingDirectory)
-                        .mounts(mounts)
-                        .build())
+                .containerSpec(containerSpecBuilder.build())
                 .restartPolicy(RestartPolicy.builder()
                         .condition("none")
                         .build())
@@ -582,13 +593,14 @@ public class DockerControlApi implements ContainerControlApi {
     }
 
     @Override
-    public void startContainer(final String containerOrServiceId) throws DockerServerException, NoDockerServerException {
-        startContainer(containerOrServiceId, getServer());
+    public void startContainer(final Container containerOrService) throws DockerServerException, NoDockerServerException {
+        startContainer(containerOrService, getServer());
     }
 
-    private void startContainer(final String containerOrServiceId,
+    private void startContainer(final Container containerOrService,
                                 final DockerServer server) throws DockerServerException {
         final boolean swarmMode = server.swarmMode();
+        final String containerOrServiceId = swarmMode ? containerOrService.serviceId() : containerOrService.containerId();
         try (final DockerClient client = getClient(server)) {
             if (swarmMode) {
                 log.debug("Inspecting service " + containerOrServiceId);
@@ -598,6 +610,9 @@ public class DockerControlApi implements ContainerControlApi {
                 }
                 final ServiceSpec originalSpec = service.spec();
                 final ServiceSpec updatedSpec = ServiceSpec.builder()
+                        .name(originalSpec.name())
+                        .labels(originalSpec.labels())
+                        .updateConfig(originalSpec.updateConfig())
                         .taskTemplate(originalSpec.taskTemplate())
                         .endpointSpec(originalSpec.endpointSpec())
                         .mode(ServiceMode.builder()
@@ -607,7 +622,7 @@ public class DockerControlApi implements ContainerControlApi {
                                 .build())
                         .build();
                 final Long version = service.version() != null && service.version().index() != null ?
-                        service.version().index() + 1 : null;
+                        service.version().index() : null;
 
                 log.info("Setting service replication to 1.");
                 client.updateService(containerOrServiceId, version, updatedSpec);
@@ -617,8 +632,8 @@ public class DockerControlApi implements ContainerControlApi {
             }
         } catch (DockerException | InterruptedException e) {
             log.error(e.getMessage());
-            final String containerOrService = swarmMode ? "service" : "container";
-            throw new DockerServerException("Could not start " + containerOrService + " " + containerOrServiceId, e);
+            final String containerOrServiceStr = swarmMode ? "service" : "container";
+            throw new DockerServerException("Could not start " + containerOrServiceStr + " " + containerOrServiceId, e);
         }
     }
 
@@ -925,27 +940,58 @@ public class DockerControlApi implements ContainerControlApi {
     }
 
     @Override
+    @Nullable
     public ServiceTask getTaskForService(final Container service) throws NoDockerServerException, DockerServerException {
         return getTaskForService(getServer(), service);
     }
 
     @Override
+    @Nullable
     public ServiceTask getTaskForService(final DockerServer dockerServer, final Container service)
             throws DockerServerException {
         try (final DockerClient client = getClient(dockerServer)) {
-            final List<Task> tasks = client.listTasks(Task.Criteria.builder().serviceName(service.serviceId()).build());
-            if (tasks.size() == 1) {
-                final Task task = tasks.get(0);
-                return ServiceTask.builder()
-                        .serviceId(service.serviceId())
-                        .taskId(task.id())
-                        .nodeId(task.nodeId())
-                        .status(task.status().state())
-                        .statusTime(task.status().timestamp())
-                        .message(task.status().message())
-                        .exitCode(task.status().containerStatus().exitCode())
-                        .containerId(task.status().containerStatus().containerId())
-                        .build();
+            Task task = null;
+
+            if (service.taskId() == null) {
+                log.trace("Service {} does not have task information yet.", service.serviceId());
+                final com.spotify.docker.client.messages.swarm.Service serviceResponse = client.inspectService(service.serviceId());
+                log.trace("Service {} has name {}. Finding tasks by service name.", service.serviceId(), serviceResponse.spec().name());
+                final List<Task> tasks = client.listTasks(Task.Criteria.builder().serviceName(serviceResponse.spec().name()).build());
+
+                if (tasks.size() == 1) {
+                    log.trace("Found one task for service name {}.", serviceResponse.spec().name());
+                    task = tasks.get(0);
+                } else if (tasks.size() == 0) {
+                    log.trace("No tasks found for service name {}.", serviceResponse.spec().name());
+                } else {
+                    log.trace("Found {} tasks for service name {}. Not sure which to use.", serviceResponse.spec().name());
+                }
+            } else {
+                log.trace("Service {} has task ID {}.", service.serviceId(), service.taskId());
+                final String taskId = service.taskId();
+                task = client.inspectTask(taskId);
+            }
+
+            if (task != null) {
+                final ServiceTask serviceTask = ServiceTask.create(task, service.serviceId());
+
+                if (serviceTask.isExitStatus() && serviceTask.exitCode() == null) {
+                    // The Task is supposed to have the container exit code, but docker doesn't report it where it should.
+                    // So go get the container info and get the exit code
+                    log.debug("Looking up exit code for container {}.", serviceTask.containerId());
+                    if (serviceTask.containerId() != null) {
+                        final ContainerInfo containerInfo = client.inspectContainer(serviceTask.containerId());
+                        if (containerInfo.state().exitCode() == null) {
+                            log.debug("Welp. Container exit code is null on the container too.");
+                        } else {
+                            return serviceTask.toBuilder().exitCode(containerInfo.state().exitCode()).build();
+                        }
+                    } else {
+                        log.error("Cannot look up exit code. Container ID is null.");
+                    }
+                }
+
+                return serviceTask;
             }
         } catch (DockerException | InterruptedException e) {
             log.error(e.getMessage(), e);
@@ -965,7 +1011,11 @@ public class DockerControlApi implements ContainerControlApi {
     @Override
     public void throwTaskEventForService(final DockerServer dockerServer, final Container service) throws DockerServerException {
         final ServiceTask task = getTaskForService(dockerServer, service);
-        eventService.triggerEvent(ServiceTaskEvent.create(task, service));
+        if (task != null) {
+            final ServiceTaskEvent serviceTaskEvent = ServiceTaskEvent.create(task, service);
+            log.trace("Throwing service task event for service {}.", serviceTaskEvent.service().serviceId());
+            eventService.triggerEvent(serviceTaskEvent);
+        }
     }
 
     /**

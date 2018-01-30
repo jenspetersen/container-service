@@ -30,6 +30,7 @@ public abstract class ResolvedCommand {
     @JsonProperty("raw-input-values") public abstract ImmutableMap<String, String> rawInputValues();
     @JsonIgnore public abstract ImmutableList<ResolvedInputTreeNode<? extends Command.Input>> resolvedInputTrees();
     @JsonProperty("command-line") public abstract String commandLine();
+    @JsonProperty("overrideEntrypoint") public abstract Boolean overrideEntrypoint();
     @JsonProperty("environment-variables") public abstract ImmutableMap<String, String> environmentVariables();
     @JsonProperty("ports") public abstract ImmutableMap<String, String> ports();
     @JsonProperty("mounts") public abstract ImmutableList<ResolvedCommandMount> mounts();
@@ -129,7 +130,8 @@ public abstract class ResolvedCommand {
 
     public static Builder builder() {
         return new AutoValue_ResolvedCommand.Builder()
-                .type(CommandEntity.DEFAULT_TYPE.getName());
+                .type(CommandEntity.DEFAULT_TYPE.getName())
+                .overrideEntrypoint(Boolean.FALSE);
     }
 
     public static ResolvedCommand fromSetupCommand(final Command setupCommand,
@@ -189,6 +191,7 @@ public abstract class ResolvedCommand {
             return this;
         }
         public abstract Builder commandLine(String commandLine);
+        public abstract Builder overrideEntrypoint(Boolean overrideEntrypoint);
         public abstract Builder environmentVariables(Map<String, String> environmentVariables);
         public abstract ImmutableMap.Builder<String, String> environmentVariablesBuilder();
         public Builder addEnvironmentVariable(final String name, final String value) {
@@ -239,12 +242,14 @@ public abstract class ResolvedCommand {
         @Nullable public abstract String commandDescription();
         public abstract String image();
         public abstract String type();
+        public abstract Boolean overrideEntrypoint();
         public abstract ImmutableMap<String, String> rawInputValues();
         public abstract ImmutableList<ResolvedInputTreeNode<? extends Command.Input>> resolvedInputTrees();
 
         public static Builder builder() {
             return new AutoValue_ResolvedCommand_PartiallyResolvedCommand.Builder()
-                    .type(CommandEntity.DEFAULT_TYPE.getName());
+                    .type(CommandEntity.DEFAULT_TYPE.getName())
+                    .overrideEntrypoint(Boolean.FALSE);
         }
 
         @AutoValue.Builder
@@ -257,6 +262,7 @@ public abstract class ResolvedCommand {
             public abstract Builder commandDescription(String commandDescription);
             public abstract Builder image(String image);
             public abstract Builder type(String type);
+            public abstract Builder overrideEntrypoint(Boolean overrideEntrypoint);
             public abstract Builder rawInputValues(Map<String, String> rawInputValues);
             public abstract ImmutableMap.Builder<String, String> rawInputValuesBuilder();
             public Builder addRawInputValue(final String inputName, final String inputValue) {

@@ -48,6 +48,7 @@ public abstract class Container {
     @Nullable @JsonProperty("node-id") public abstract String nodeId();
     @JsonProperty("docker-image") public abstract String dockerImage();
     @JsonProperty("command-line") public abstract String commandLine();
+    @Nullable @JsonProperty("override-entrypoint") public abstract Boolean overrideEntrypoint();
     @Nullable @JsonProperty("working-directory") public abstract String workingDirectory();
     @Nullable @JsonProperty("subtype") public abstract String subtype();
     @Nullable @JsonProperty("parent-database-id") public abstract Long parentDatabaseId();
@@ -65,7 +66,8 @@ public abstract class Container {
 
     @JsonIgnore
     public boolean isSwarmService() {
-        return swarm() != null && swarm();
+        final Boolean swarm = swarm();
+        return swarm != null && swarm;
     }
 
     @JsonIgnore
@@ -102,6 +104,7 @@ public abstract class Container {
                                    @JsonProperty("node-id") final String nodeId,
                                    @JsonProperty("docker-image") final String dockerImage,
                                    @JsonProperty("command-line") final String commandLine,
+                                   @JsonProperty("override-entrypoint") final Boolean overrideEntrypoint,
                                    @JsonProperty("working-directory") final String workingDirectory,
                                    @JsonProperty("subtype") final String subtype,
                                    @JsonProperty("parent-database-id") final long parentDatabaseId,
@@ -131,6 +134,7 @@ public abstract class Container {
                 .nodeId(nodeId)
                 .dockerImage(dockerImage)
                 .commandLine(commandLine)
+                .overrideEntrypoint(overrideEntrypoint)
                 .workingDirectory(workingDirectory)
                 .subtype(subtype)
                 .parentDatabaseId(parentDatabaseId)
@@ -166,6 +170,7 @@ public abstract class Container {
                 .nodeId(containerEntity.getNodeId())
                 .dockerImage(containerEntity.getDockerImage())
                 .commandLine(containerEntity.getCommandLine())
+                .overrideEntrypoint(containerEntity.getOverrideEntrypoint())
                 .workingDirectory(containerEntity.getWorkingDirectory())
                 .subtype(containerEntity.getSubtype())
                 .parentContainer(create(containerEntity.getParentContainerEntity()))
@@ -245,6 +250,7 @@ public abstract class Container {
                 .wrapperId(resolvedCommand.wrapperId())
                 .dockerImage(resolvedCommand.image())
                 .commandLine(resolvedCommand.commandLine())
+                .overrideEntrypoint(resolvedCommand.overrideEntrypoint())
                 .workingDirectory(resolvedCommand.workingDirectory())
                 .environmentVariables(resolvedCommand.environmentVariables())
                 .subtype(containerSubtype)
@@ -338,6 +344,7 @@ public abstract class Container {
         public abstract Builder userId(String userId);
         public abstract Builder dockerImage(String dockerImage);
         public abstract Builder commandLine(String commandLine);
+        public abstract Builder overrideEntrypoint(Boolean overrideEntrypoint);
         public abstract Builder workingDirectory(String workingDirectory);
         public abstract Builder swarm(Boolean swarm);
         public abstract Builder serviceId(String serviceId);

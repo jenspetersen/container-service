@@ -259,7 +259,7 @@ public class ContainerServiceImpl implements ContainerService {
     private void startContainer(final UserI userI, final Container savedContainerOrService) throws NoDockerServerException, ContainerException {
         log.info("Starting container.");
         try {
-            containerControlApi.startContainer(savedContainerOrService.containerId());
+            containerControlApi.startContainer(savedContainerOrService);
         } catch (DockerServerException e) {
             addContainerHistoryItem(savedContainerOrService, ContainerHistory.fromSystem("Failed", "Did not start." + e.getMessage()), userI);
             handleFailure(savedContainerOrService);
@@ -376,7 +376,11 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     public void finalize(final Container container, final UserI userI, final String exitCode) {
-        log.info("Finalizing Container {}, container id {}.", container.databaseId(), container.containerId());
+        if (container.isSwarmService()) {
+            log.info("Finalizing Container {}, service id {}.", container.databaseId(), container.serviceId());
+        } else {
+            log.info("Finalizing Container {}, container id {}.", container.databaseId(), container.containerId());
+        }
 
         final Container finalized = containerFinalizeService.finalizeContainer(container, userI, exitCodeIsFailed(exitCode));
 
@@ -399,7 +403,11 @@ public class ContainerServiceImpl implements ContainerService {
                 }
             }
 
-            if (failedExitCode.size() > 0) {
+            final int numSetup = setupContainers.size();
+            final int numFailed = failedExitCode.size();
+            final int numNull = nullExitCode.size();
+
+            if (numFailed > 0) {
                 // If any of the setup containers failed, we must kill the rest and fail the main container.
                 log.info("One or more setup containers have failed. Killing the rest and failing the parent.");
                 for (final Container setupContainer : setupContainers) {
@@ -436,7 +444,17 @@ public class ContainerServiceImpl implements ContainerService {
 
                 log.info("Setting status to \"Failed Setup\" for parent container {} with container id {}.", parent.databaseId(), parent.containerId());
                 addContainerHistoryItem(parent, ContainerHistory.fromSystem("Failed Setup", failedContainerMessage), userI);
-            } else if (nullExitCode.size() == 0) {
+            } else if (numNull == numSetup) {
+                // This is an error. We know at least one setup container has finished because we have reached this "finalize" method.
+                // At least one of the setup containers should have a non-null exit status.
+                final String message = "All setup containers have null statuses, but one of them should be finished.";
+                log.error(message);
+                log.info("Setting status to \"Failed Setup\" for parent container {} with container id {}.", parent.databaseId(), parent.containerId());
+                addContainerHistoryItem(parent, ContainerHistory.fromSystem("Failed Setup", message), userI);
+            } else if (numNull > 0) {
+                final int numLeft = numSetup - numNull;
+                log.info("Not changing parent status. {} setup containers left to finish.", numLeft);
+            } else {
                 // If none of the setup containers have failed and none of the exit codes are null,
                 // that means all the setup containers have succeeded.
                 // We should start the parent container.

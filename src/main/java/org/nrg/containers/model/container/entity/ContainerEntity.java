@@ -50,6 +50,7 @@ public class ContainerEntity extends AbstractHibernateEntity {
     private Date statusTime;
     private String dockerImage;
     private String commandLine;
+    private Boolean overrideEntrypoint;
     private String workingDirectory;
     private Map<String, String> environmentVariables = Maps.newHashMap();
     private List<ContainerEntityMount> mounts = Lists.newArrayList();
@@ -198,6 +199,14 @@ public class ContainerEntity extends AbstractHibernateEntity {
 
     public void setCommandLine(final String commandLine) {
         this.commandLine = commandLine;
+    }
+
+    public Boolean getOverrideEntrypoint() {
+        return overrideEntrypoint;
+    }
+
+    public void setOverrideEntrypoint(final Boolean overrideEntrypoint) {
+        this.overrideEntrypoint = overrideEntrypoint;
     }
 
     public String getWorkingDirectory() {
@@ -525,6 +534,7 @@ public class ContainerEntity extends AbstractHibernateEntity {
                 .add("statusTime", statusTime)
                 .add("dockerImage", dockerImage)
                 .add("commandLine", commandLine)
+                .add("overrideEntrypoint", overrideEntrypoint)
                 .add("workingDirectory", workingDirectory)
                 .add("environmentVariables", environmentVariables)
                 .add("mounts", mounts)

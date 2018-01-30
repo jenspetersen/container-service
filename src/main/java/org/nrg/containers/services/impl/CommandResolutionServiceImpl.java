@@ -328,6 +328,7 @@ public class CommandResolutionServiceImpl implements CommandResolutionService {
                     .commandDescription(command.description())
                     .image(command.image())
                     .type(command.type())
+                    .overrideEntrypoint(command.overrideEntrypoint() == null ? Boolean.FALSE : command.overrideEntrypoint())
                     .rawInputValues(inputValues)
                     .resolvedInputTrees(resolvedInputTrees)
                     .build();
@@ -360,6 +361,7 @@ public class CommandResolutionServiceImpl implements CommandResolutionService {
                     .commandDescription(command.description())
                     .image(command.image())
                     .type(command.type())
+                    .overrideEntrypoint(command.overrideEntrypoint() == null ? Boolean.FALSE : command.overrideEntrypoint())
                     .rawInputValues(inputValues)
                     .resolvedInputTrees(resolvedInputTrees)
                     .outputs(resolveOutputs(resolvedInputTrees, resolvedInputValuesByReplacementKey))

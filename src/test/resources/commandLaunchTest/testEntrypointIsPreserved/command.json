@@ -6,7 +6,6 @@
     "type": "docker",
     "image": "xnat/entrypoint-test:latest",
     "command-line": "no-entrypoint.sh",
-    "override-entrypoint": true,
     "xnat": [
         {
             "name": "wrapper",
