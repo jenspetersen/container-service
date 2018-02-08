@@ -24,6 +24,9 @@ If you want XNAT to execute your docker image, you will need a Command. The Comm
         "hash": "", // only valid for docker images
         "working-directory": "",
         "command-line": "",
+        "reserve-memory": "",
+        "limit-memory": "",
+        "limit-cpu": "",
         "override-entrypoint": false,
         "mounts": [
             {
@@ -124,6 +127,9 @@ If you want XNAT to execute your docker image, you will need a Command. The Comm
 - **hash** - (Docker images only) A sha hash value for the image.
 - **working-directory** - The working directory in which the command line should be executed.
 - **command-line** - This string is a templatized version of the command-line string that will be executed inside the container. The templatized portions will be resolved at launch time with the values of the command's inputs. See the section on [template strings](#template-strings) below for more detail.
+- **reserve-memory** Integer value in MB to ensure containers have at least this much memory available
+- **limit-memory** Integer value in MB to ensure containers don't use more memory than this
+- **limit-cpu** Float value to ensure containers don't use more cycle shares than this. For example, a value of 1.5 would mean the container can't use more cycles than 1.5 CPUs are capable of.
 - **override-entrypoint** - A boolean value (`true`/`false`). If `false`, the entrypoint will not be touched; any entrypoint that the underlying image has will be used. If `true`, the entrypoint will be overridden with an empty string.
 - **mounts** - A list of mount points that will be created for your container.
     - **name** - The name of the mount. You can use this to refer to the mount elsewhere in the command, e.g. when creating an output.

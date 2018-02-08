@@ -37,6 +37,8 @@ Not yet released.
     ContainerSpec.Args = null
     ```
 
+* Add option to reserve memory and/or limit memory and CPU usage of containers via command entries "reserve-memory", "limit-memory", "limit-cpu". Update command documentation accordingly. (https://github.com/NrgXnat/container-service/pull/6)
+
 ### Bugfixes
 
 *
